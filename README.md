@@ -21,7 +21,7 @@ It allows users to perform basic arithmetic operations through a menu system.
 
 ##  Technologies Used
 
-- Python 3
+- python3 calculator.py
 
 ---
 

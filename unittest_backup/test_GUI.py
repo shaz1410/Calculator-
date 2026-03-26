@@ -1,7 +1,7 @@
-import tests
+import unittest_backup
 from GUI import evaluate_expression
 
-class TestGUIFunctions(tests.TestCase):
+class TestGUIFunctions(unittest_backup.TestCase):
 
     def test_addition(self):
         self.assertEqual(evaluate_expression("2+3"), 5)
@@ -26,5 +26,3 @@ class TestGUIFunctions(tests.TestCase):
         self.assertEqual(evaluate_expression("abc+1"), "Error: Invalid input!")
         self.assertEqual(evaluate_expression("2++3"), "Error: Invalid input!")
 
-if __name__ == "__main__":
-    tests.main()

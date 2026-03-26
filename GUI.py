@@ -87,3 +87,34 @@ for i in range(4):
     root.grid_columnconfigure(i, weight=1)
 
 root.mainloop()
+
+# gui.py helper function
+def evaluate_expression(expr):
+    """Evaluate a simple expression using calculator.py functions"""
+    from calculator import add, subtract, multiply, divide, power, modulus
+    expr = expr.strip()
+    try:
+        if '**' in expr:
+            a, b = map(float, expr.split('**'))
+            return power(a, b)
+        elif '%' in expr:
+            a, b = map(float, expr.split('%'))
+            return modulus(a, b)
+        elif '+' in expr:
+            a, b = map(float, expr.split('+'))
+            return add(a, b)
+        elif '-' in expr:
+            a, b = map(float, expr.split('-'))
+            return subtract(a, b)
+        elif '*' in expr:
+            a, b = map(float, expr.split('*'))
+            return multiply(a, b)
+        elif '/' in expr:
+            a, b = map(float, expr.split('/'))
+            return divide(a, b)
+        else:
+            return float(expr)
+    except ZeroDivisionError:
+        return "Error: Cannot divide by zero!"
+    except Exception:
+        return "Error: Invalid input!"

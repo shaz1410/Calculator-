@@ -1,7 +1,7 @@
-import unittest
+import unittest_backup
 from calculator import add, subtract, multiply, divide, power, modulus
 
-class TestCalculator(unittest.TestCase):
+class TestCalculator(unittest_backup.TestCase):
 
     def test_add(self):
         self.assertEqual(add(2, 3), 5)
@@ -26,6 +26,3 @@ class TestCalculator(unittest.TestCase):
     def test_modulus(self):
         self.assertEqual(modulus(10, 3), 1)
         self.assertEqual(modulus(4, 2), 0)
-
-if __name__ == "__main__":
-    unittest.main()

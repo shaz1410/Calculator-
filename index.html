@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calc — by Sharon</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #1a0a10;
+      --surface: #2b1020;
+      --card: #3a1828;
+      --pink-light: #ffb3c6;
+      --pink-mid: #ff6b9d;
+      --pink-hot: #ff2d78;
+      --pink-glow: rgba(255, 45, 120, 0.25);
+      --text: #fff0f4;
+      --muted: #b07080;
+      --op-bg: #5c1a33;
+      --op-text: #ffb3c6;
+      --eq-bg: linear-gradient(135deg, #ff2d78, #ff6b9d);
+      --clear-bg: #7a1a3a;
+      --radius: 16px;
+      --btn-radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Mono', monospace;
+      overflow: hidden;
+    }
+
+    /* Background blobs */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(255,45,120,0.18), transparent 70%);
+      top: -100px; right: -100px;
+      animation: drift1 8s ease-in-out infinite alternate;
+    }
+    body::after {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(255,107,157,0.12), transparent 70%);
+      bottom: -80px; left: -80px;
+      animation: drift2 10s ease-in-out infinite alternate;
+    }
+
+    @keyframes drift1 { from { transform: translate(0,0); } to { transform: translate(30px, 40px); } }
+    @keyframes drift2 { from { transform: translate(0,0); } to { transform: translate(-20px, -30px); } }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .title {
+      font-family: 'Playfair Display', serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .calc {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 340px;
+      box-shadow:
+        0 0 0 1px rgba(255,107,157,0.15),
+        0 40px 80px rgba(0,0,0,0.6),
+        0 0 60px var(--pink-glow);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: slideUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .display {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 16px 20px;
+      border: 1px solid rgba(255,107,157,0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      min-height: 90px;
+    }
+
+    .display .history {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      min-height: 18px;
+      transition: all 0.2s;
+    }
+
+    .display .expr {
+      font-size: 28px;
+      color: var(--text);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      word-break: break-all;
+      max-width: 100%;
+      transition: color 0.2s;
+    }
+
+    .display .expr.error {
+      color: #ff6b9d;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      height: 62px;
+      border: none;
+      border-radius: var(--btn-radius);
+      font-family: 'DM Mono', monospace;
+      font-size: 16px;
+      font-weight: 400;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.12s ease, background 0.12s;
+      position: relative;
+      overflow: hidden;
+      outline: none;
+      letter-spacing: 0.02em;
+    }
+
+    button::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.1s;
+      border-radius: inherit;
+    }
+    button:active::after { background: rgba(255,255,255,0.08); }
+    button:active { transform: scale(0.94); }
+
+    /* Number buttons */
+    .btn-num {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .btn-num:hover {
+      background: #3f1a2a;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    /* Operator buttons */
+    .btn-op {
+      background: var(--op-bg);
+      color: var(--op-text);
+      border: 1px solid rgba(255,107,157,0.2);
+      font-size: 18px;
+    }
+    .btn-op:hover {
+      background: #701f3f;
+      box-shadow: 0 4px 16px rgba(255,45,120,0.15);
+    }
+
+    /* Clear */
+    .btn-clear {
+      background: var(--clear-bg);
+      color: #ff9bb8;
+      font-size: 14px;
+      letter-spacing: 0.06em;
+    }
+    .btn-clear:hover { background: #921f4a; }
+
+    /* Backspace */
+    .btn-back {
+      background: #3f1020;
+      color: #ff6b9d;
+      font-size: 18px;
+      border: 1px solid rgba(255,45,120,0.15);
+    }
+    .btn-back:hover { background: #561528; }
+
+    /* Equals */
+    .btn-eq {
+      background: var(--eq-bg);
+      color: white;
+      font-size: 22px;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(255,45,120,0.4);
+      border: none;
+    }
+    .btn-eq:hover {
+      box-shadow: 0 6px 28px rgba(255,45,120,0.6);
+      filter: brightness(1.08);
+    }
+
+    /* Zero spans 2 cols */
+    .span2 { grid-column: span 2; }
+
+    .footer {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* Ripple */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      transform: scale(0);
+      animation: ripple-anim 0.4s linear;
+      pointer-events: none;
+    }
+    @keyframes ripple-anim {
+      to { transform: scale(4); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="title">Calculator</div>
+  <div class="calc">
+    <div class="display">
+      <div class="history" id="history"></div>
+      <div class="expr" id="expr">0</div>
+    </div>
+    <div class="grid">
+      <!-- Row 1 -->
+      <button class="btn-clear" onclick="clearAll(this)">AC</button>
+      <button class="btn-back" onclick="backspace(this)">⌫</button>
+      <button class="btn-op" onclick="appendOp('%', this)">%</button>
+      <button class="btn-op" onclick="appendOp('/', this)">÷</button>
+      <!-- Row 2 -->
+      <button class="btn-num" onclick="append('7', this)">7</button>
+      <button class="btn-num" onclick="append('8', this)">8</button>
+      <button class="btn-num" onclick="append('9', this)">9</button>
+      <button class="btn-op" onclick="appendOp('*', this)">×</button>
+      <!-- Row 3 -->
+      <button class="btn-num" onclick="append('4', this)">4</button>
+      <button class="btn-num" onclick="append('5', this)">5</button>
+      <button class="btn-num" onclick="append('6', this)">6</button>
+      <button class="btn-op" onclick="appendOp('-', this)">−</button>
+      <!-- Row 4 -->
+      <button class="btn-num" onclick="append('1', this)">1</button>
+      <button class="btn-num" onclick="append('2', this)">2</button>
+      <button class="btn-num" onclick="append('3', this)">3</button>
+      <button class="btn-op" onclick="appendOp('+', this)">+</button>
+      <!-- Row 5 -->
+      <button class="btn-op" onclick="appendOp('**', this)" style="font-size:13px">xʸ</button>
+      <button class="btn-num span2" onclick="append('0', this)">0</button>
+      <button class="btn-num" onclick="append('.', this)">.</button>
+      <!-- Row 6 -->
+      <button class="btn-eq" style="grid-column:span 4" onclick="calculate(this)">=</button>
+    </div>
+  </div>
+  <div class="footer">Made by Sharon Mthembu</div>
+</div>
+
+<script>
+  let expr = '';
+  let justCalculated = false;
+
+  const exprEl = document.getElementById('expr');
+  const histEl = document.getElementById('history');
+
+  function display(val, isError = false) {
+    exprEl.textContent = val || '0';
+    exprEl.className = 'expr' + (isError ? ' error' : '');
+  }
+
+  function ripple(btn, e) {
+    const r = document.createElement('span');
+    r.classList.add('ripple');
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    r.style.width = r.style.height = size + 'px';
+    r.style.left = (e.clientX - rect.left - size/2) + 'px';
+    r.style.top = (e.clientY - rect.top - size/2) + 'px';
+    btn.appendChild(r);
+    setTimeout(() => r.remove(), 400);
+  }
+
+  function append(val, btn, e) {
+    if (e) ripple(btn, e);
+    if (justCalculated && !isNaN(val) && val !== '.') {
+      expr = val;
+      justCalculated = false;
+    } else {
+      if (justCalculated) justCalculated = false;
+      if (val === '.' && expr.split(/[\+\-\*\/\%]/).pop().includes('.')) return;
+      expr += val;
+    }
+    display(formatExpr(expr));
+  }
+
+  function appendOp(op, btn, e) {
+    if (e) ripple(btn, e);
+    justCalculated = false;
+    if (expr === '' && op !== '-') return;
+    // Replace trailing operator
+    expr = expr.replace(/[\+\-\*\/\%\*]+$/, '') + op;
+    display(formatExpr(expr));
+  }
+
+  function clearAll(btn, e) {
+    if (e) ripple(btn, e);
+    expr = '';
+    histEl.textContent = '';
+    display('0');
+    justCalculated = false;
+  }
+
+  function backspace(btn, e) {
+    if (e) ripple(btn, e);
+    if (justCalculated) { clearAll(); return; }
+    expr = expr.slice(0, -1);
+    display(expr ? formatExpr(expr) : '0');
+  }
+
+  function formatExpr(e) {
+    return e.replace(/\*/g, '×').replace(/\//g, '÷').replace(/\*\*/g, '^') || '0';
+  }
+
+  function calculate(btn, e) {
+    if (e) ripple(btn, e);
+    if (!expr) return;
+    try {
+      const evalExpr = expr.replace(/\*\*/g, '**');
+      // Check divide by zero
+      if (/\/\s*0(?!\.)/.test(evalExpr)) {
+        histEl.textContent = formatExpr(expr) + ' =';
+        display('Error: Cannot divide by zero!', true);
+        expr = '';
+        return;
+      }
+      const result = Function('"use strict"; return (' + evalExpr + ')')();
+      if (!isFinite(result)) {
+        display('Error: Cannot divide by zero!', true);
+        expr = '';
+        return;
+      }
+      histEl.textContent = formatExpr(expr) + ' =';
+      const rounded = parseFloat(result.toFixed(10));
+      expr = String(rounded);
+      display(expr);
+      justCalculated = true;
+    } catch {
+      histEl.textContent = formatExpr(expr) + ' =';
+      display('Error: Invalid input!', true);
+      expr = '';
+    }
+  }
+
+  // Keyboard support
+  document.addEventListener('keydown', (e) => {
+    const k = e.key;
+    if (k >= '0' && k <= '9') append(k, null);
+    else if (k === '.') append('.', null);
+    else if (k === '+') appendOp('+', null);
+    else if (k === '-') appendOp('-', null);
+    else if (k === '*') appendOp('*', null);
+    else if (k === '/') { e.preventDefault(); appendOp('/', null); }
+    else if (k === '%') appendOp('%', null);
+    else if (k === '^') appendOp('**', null);
+    else if (k === 'Enter' || k === '=') calculate(null);
+    else if (k === 'Backspace') backspace(null);
+    else if (k === 'Escape') clearAll(null);
+  });
+</script>
+</body>
+</html>
